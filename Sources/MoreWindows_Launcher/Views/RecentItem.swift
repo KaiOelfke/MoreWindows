@@ -91,14 +91,11 @@ private extension RecentItem {
 
 private extension RecentItem {
 	func openFile() {
-		Task {
+		Task { @MainActor in
 			do {
 				try await openDocument(at: url)
-
 				if recentItemsOptions.contains(.closeWindow) {
-					await MainActor.run {
-						dismissLauncher()
-					}
+                    dismissLauncher()
 				}
 			} catch {
 				print("Failed to open document at \(url): ", error)
