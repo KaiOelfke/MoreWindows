@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import AppKit
 
 struct RecentItem: View {
 	@Environment(\.dismissLauncher) private var dismissLauncher
@@ -93,7 +94,9 @@ private extension RecentItem {
 	func openFile() {
 		Task {
 			do {
-				try await openDocument(at: url)
+                // openDocument crashes, when opening an already opened document
+//				try await openDocument(at: url)
+                try await NSDocumentController.shared.openDocument(withContentsOf: url, display: true)
 
 				if recentItemsOptions.contains(.closeWindow) {
 					await MainActor.run {
