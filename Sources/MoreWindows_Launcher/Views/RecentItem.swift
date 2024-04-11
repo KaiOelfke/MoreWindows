@@ -92,16 +92,18 @@ private extension RecentItem {
 
 private extension RecentItem {
 	func openFile() {
-		Task {
+		Task { @MainActor in
 			do {
-                // openDocument crashes, when opening an already opened document
-//				try await openDocument(at: url)
-                try await NSDocumentController.shared.openDocument(withContentsOf: url, display: true)
 
+                // openDocument crashes, when opening an already opened document
+                if let alreadyOpenedDocument = NSDocumentController.shared.document(for: url) {
+                    alreadyOpenedDocument.showWindows()
+                    return
+                }
+                
+                try await openDocument(at: url)
 				if recentItemsOptions.contains(.closeWindow) {
-					await MainActor.run {
-						dismissLauncher()
-					}
+                    dismissLauncher()
 				}
 			} catch {
 				print("Failed to open document at \(url): ", error)
