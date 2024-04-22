@@ -1,18 +1,22 @@
+import _MoreWindowsCommon
 import SwiftUI
 
 struct LauncherButtonStyle: PrimitiveButtonStyle {
-	@Environment(\.dismissLauncher) private var dismissLauncher
+	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.launcherActionOptions) private var launcherActionOptions
 
 	public init() { }
 
 	public func makeBody(configuration: Configuration) -> some View {
 		Button(role: configuration.role, action: { buttonAction(configuration) }) {
-			configuration.label
-				.fontWeight(.semibold)
-				.padding(8)
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
-				.background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+			HStack(spacing: 0) {
+				configuration.label
+					.labelStyle(.launcher)
+				Spacer(minLength: 0)
+			}
+			.padding(8)
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
 		}
 		.buttonStyle(.plain)
 	}
@@ -22,7 +26,7 @@ private extension LauncherButtonStyle {
 	func buttonAction(_ configuration: Configuration) {
 		configuration.trigger()
 		if launcherActionOptions.contains(.closeWindow) {
-			dismissLauncher()
+			dismissWindow(id: WindowType.launcher.id)
 		}
 	}
 }

@@ -1,9 +1,10 @@
+import _MoreWindowsCommon
 import Foundation
 import SwiftUI
 import AppKit
 
 struct RecentItem: View {
-	@Environment(\.dismissLauncher) private var dismissLauncher
+	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.recentItemsOptions) private var recentItemsOptions
 	@Environment(\.openDocument) private var openDocument
 
@@ -92,18 +93,19 @@ private extension RecentItem {
 
 private extension RecentItem {
 	func openFile() {
-		Task { @MainActor in
+		Task {  @MainActor in
 			do {
+        // openDocument crashes, when opening an already opened document
+        if let alreadyOpenedDocument = NSDocumentController.shared.document(for: url) {
+            alreadyOpenedDocument.showWindows()
+            return
+        }
 
-                // openDocument crashes, when opening an already opened document
-                if let alreadyOpenedDocument = NSDocumentController.shared.document(for: url) {
-                    alreadyOpenedDocument.showWindows()
-                    return
-                }
-                
-                try await openDocument(at: url)
+        try await openDocument(at: url)
 				if recentItemsOptions.contains(.closeWindow) {
-                    dismissLauncher()
+					await MainActor.run {
+						dismissWindow(id: WindowType.launcher.id)
+					}
 				}
 			} catch {
 				print("Failed to open document at \(url): ", error)
